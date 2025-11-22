@@ -1,2 +1,2 @@
-# squirrellybanana
+# Squirrelly Banana
 Producer Tools
