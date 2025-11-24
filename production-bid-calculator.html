@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simz Bid Tool</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-main: #f6f7f9;
+            --bg-card: #ffffff;
+            --text-primary: #1a1d23;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --primary-blue: #3b82f6;
+            --primary-purple: #8b5cf6;
+            --success-green: #10b981;
+            --danger-red: #ef4444;
+            --warning-orange: #f97316;
+            --border-color: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --input-bg: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0f1419;
+            --bg-card: #1a1f2e;
+            --text-primary: #e8eaed;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --primary-blue: #60a5fa;
+            --primary-purple: #a78bfa;
+            --success-green: #34d399;
+            --danger-red: #f87171;
+            --warning-orange: #fb923c;
+            --border-color: #2d3748;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+            --input-bg: #111827;
+        }
+
+        body {
+            font-family: 'Barlow Condensed', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 1.75rem;
+            box-shadow: var(--shadow);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-bars {
+            display: flex;
+            gap: 3px;
+            margin-top: 1.5rem;
+            height: 32px;
+        }
+
+        .stat-bar {
+            flex: 1;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-bar.blue { background: #60a5fa; }
+        .stat-bar.blue.inactive { background: #dbeafe; }
+        
+        .stat-bar.purple { background: #a78bfa; }
+        .stat-bar.purple.inactive { background: #ede9fe; }
+        
+        .stat-bar.orange { background: #fb923c; }
+        .stat-bar.orange.inactive { background: #fed7aa; }
+
+        /* Main Card */
+        .main-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.9375rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        .data-table thead th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-table input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .data-table input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .data-table .total {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Scenarios Grid */
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .scenario-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .scenario-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        [data-theme="dark"] .scenario-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .scenario-card.lowest {
+            border-color: var(--success-green);
+            background: var(--bg-card);
+            box-shadow: 0 0 0 2px var(--success-green) inset;
+        }
+
+        .scenario-location {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+
+        .scenario-total {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .scenario-card.lowest .scenario-total {
+            color: var(--success-green);
+        }
+
+        .scenario-badge {
+            display: inline-block;
+            margin-top: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--success-green);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-icon.active {
+            color: var(--primary-blue);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .scenarios-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .theme-toggle {
+                top: 1rem;
+                right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+        <svg class="theme-toggle-icon" id="light-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <svg class="theme-toggle-icon" id="dark-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Simz Bid Tool</h1>
+            <p>Calculate comprehensive production costs for advertising campaigns</p>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="stat-label">Total Scripts</span>
+                </div>
+                <div class="stat-value" id="scripts-count">6</div>
+                <div class="stat-bars">
+                    <div class="stat-bar blue"></div>
+                    <div class="stat-bar blue"></div>
+                    <div class="stat-bar blue"></div>
+                    <div class="stat-bar blue"></div>
+                    <div class="stat-bar blue"></div>
+                    <div class="stat-bar blue"></div>
+                    <div class="stat-bar blue inactive"></div>
+                    <div class="stat-bar blue inactive"></div>
+                    <div class="stat-bar blue inactive"></div>
+                    <div class="stat-bar blue inactive"></div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="stat-label">Production Days</span>
+                </div>
+                <div class="stat-value" id="production-days">3</div>
+                <div class="stat-bars">
+                    <div class="stat-bar purple"></div>
+                    <div class="stat-bar purple"></div>
+                    <div class="stat-bar purple"></div>
+                    <div class="stat-bar purple inactive"></div>
+                    <div class="stat-bar purple inactive"></div>
+                    <div class="stat-bar purple inactive"></div>
+                    <div class="stat-bar purple inactive"></div>
+                    <div class="stat-bar purple inactive"></div>
+                    <div class="stat-bar purple inactive"></div>
+                    <div class="stat-bar purple inactive"></div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <svg class="stat-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    <span class="stat-label">Deliverables</span>
+                </div>
+                <div class="stat-value" id="deliverables-count">6</div>
+                <div class="stat-bars">
+                    <div class="stat-bar orange"></div>
+                    <div class="stat-bar orange"></div>
+                    <div class="stat-bar orange"></div>
+                    <div class="stat-bar orange"></div>
+                    <div class="stat-bar orange"></div>
+                    <div class="stat-bar orange"></div>
+                    <div class="stat-bar orange inactive"></div>
+                    <div class="stat-bar orange inactive"></div>
+                    <div class="stat-bar orange inactive"></div>
+                    <div class="stat-bar orange inactive"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="main-card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <h2 class="card-title">Project Configuration</h2>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Number of Scripts</label>
+                    <input type="number" class="form-input" id="scripts-input" value="6" min="1" max="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Production Days</label>
+                    <input type="number" class="form-input" id="production-days-input" value="3" min="1" max="30">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Deliverables</label>
+                    <input type="number" class="form-input" id="deliverables-input" value="6" min="1" max="50">
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Action Production -->
+        <div class="main-card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+                <h2 class="card-title">Live Action Production</h2>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Day Rate</th>
+                        <th>Insurance</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>US / Los Angeles</strong></td>
+                        <td><input type="text" class="currency" data-location="us-la" data-type="day-rate" value="$500,000"></td>
+                        <td><input type="text" class="currency" data-location="us-la" data-type="insurance" value="$30,000"></td>
+                        <td class="total" data-location="us-la" data-type="total">$1,530,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>US / Other</strong></td>
+                        <td><input type="text" class="currency" data-location="us-other" data-type="day-rate" value="$300,000"></td>
+                        <td><input type="text" class="currency" data-location="us-other" data-type="insurance" value="$18,000"></td>
+                        <td class="total" data-location="us-other" data-type="total">$918,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Canada</strong></td>
+                        <td><input type="text" class="currency" data-location="canada" data-type="day-rate" value="$200,000"></td>
+                        <td><input type="text" class="currency" data-location="canada" data-type="insurance" value="$12,000"></td>
+                        <td class="total" data-location="canada" data-type="total">$612,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>International</strong></td>
+                        <td><input type="text" class="currency" data-location="international" data-type="day-rate" value="$150,000"></td>
+                        <td><input type="text" class="currency" data-location="international" data-type="insurance" value="$9,000"></td>
+                        <td class="total" data-location="international" data-type="total">$459,000</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Post Production -->
+        <div class="main-card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4"></path>
+                </svg>
+                <h2 class="card-title">Post Production</h2>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Per Deliverable</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Edit</strong></td>
+                        <td><input type="text" class="currency" data-post="edit" data-type="rate" value="$5,000"></td>
+                        <td class="total" data-post="edit" data-type="total">$30,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Color</strong></td>
+                        <td><input type="text" class="currency" data-post="color" data-type="rate" value="$2,500"></td>
+                        <td class="total" data-post="color" data-type="total">$15,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>VFX</strong></td>
+                        <td><input type="text" class="currency" data-post="vfx" data-type="rate" value="$5,000"></td>
+                        <td class="total" data-post="vfx" data-type="total">$30,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conform</strong></td>
+                        <td><input type="text" class="currency" data-post="conform" data-type="rate" value="$10,000"></td>
+                        <td class="total" data-post="conform" data-type="total">$60,000</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Talent -->
+        <div class="main-card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                <h2 class="card-title">Talent</h2>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Per Script Rate</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>On-Camera Principals (OCPs)</strong></td>
+                        <td><input type="number" class="form-input" data-talent="ocp" data-type="quantity" value="5" min="0"></td>
+                        <td><input type="text" class="currency" data-talent="ocp" data-type="rate" value="$2,000"></td>
+                        <td class="total" data-talent="ocp" data-type="total">$60,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Voice Over (VO)</strong></td>
+                        <td><input type="number" class="form-input" data-talent="vo" data-type="quantity" value="1" min="0"></td>
+                        <td><input type="text" class="currency" data-talent="vo" data-type="rate" value="$1,000"></td>
+                        <td class="total" data-talent="vo" data-type="total">$6,000</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Parts Model</strong></td>
+                        <td><input type="number" class="form-input" data-talent="parts" data-type="quantity" value="3" min="0"></td>
+                        <td><input type="text" class="currency" data-talent="parts" data-type="rate" value="$500"></td>
+                        <td class="total" data-talent="parts" data-type="total">$9,000</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Bid Scenarios -->
+        <div class="main-card">
+            <div class="card-header">
+                <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                <h2 class="card-title">Total Production Cost by Location</h2>
+            </div>
+            <div class="scenarios-grid">
+                <div class="scenario-card" data-location="us-la">
+                    <div class="scenario-location">US / Los Angeles</div>
+                    <div class="scenario-total" data-scenario="us-la">$1,740,000</div>
+                </div>
+                <div class="scenario-card" data-location="us-other">
+                    <div class="scenario-location">US / Other</div>
+                    <div class="scenario-total" data-scenario="us-other">$1,128,000</div>
+                </div>
+                <div class="scenario-card" data-location="canada">
+                    <div class="scenario-location">Canada</div>
+                    <div class="scenario-total" data-scenario="canada">$822,000</div>
+                </div>
+                <div class="scenario-card lowest" data-location="international">
+                    <div class="scenario-location">International</div>
+                    <div class="scenario-total" data-scenario="international">$669,000</div>
+                    <div class="scenario-badge">BEST VALUE</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const lightIcon = document.getElementById('light-icon');
+        const darkIcon = document.getElementById('dark-icon');
+        const htmlElement = document.documentElement;
+
+        // Check for saved theme preference or default to dark mode
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        htmlElement.setAttribute('data-theme', currentTheme);
+        updateThemeIcons(currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcons(newTheme);
+        });
+
+        function updateThemeIcons(theme) {
+            if (theme === 'dark') {
+                lightIcon.classList.remove('active');
+                darkIcon.classList.add('active');
+            } else {
+                darkIcon.classList.remove('active');
+                lightIcon.classList.add('active');
+            }
+        }
+
+        // Utility functions
+        function parseCurrency(value) {
+            if (typeof value === 'string') {
+                return parseFloat(value.replace(/[^0-9.-]+/g, '')) || 0;
+            }
+            return value || 0;
+        }
+
+        function formatCurrency(value) {
+            return '$' + new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        // Get elements
+        const scriptsInput = document.getElementById('scripts-input');
+        const productionDaysInput = document.getElementById('production-days-input');
+        const deliverablesInput = document.getElementById('deliverables-input');
+        
+        // Main calculation function
+        function calculateAll() {
+            const scripts = parseInt(scriptsInput.value) || 1;
+            const productionDays = parseInt(productionDaysInput.value) || 1;
+            const deliverables = parseInt(deliverablesInput.value) || 1;
+            
+            // Update display values
+            document.getElementById('scripts-count').textContent = scripts;
+            document.getElementById('production-days').textContent = productionDays;
+            document.getElementById('deliverables-count').textContent = deliverables;
+            
+            // Update stat bars
+            updateStatBars(scripts, productionDays, deliverables);
+            
+            // Calculate Live Action totals
+            const locations = ['us-la', 'us-other', 'canada', 'international'];
+            const liveActionTotals = {};
+            
+            locations.forEach(location => {
+                const dayRateInput = document.querySelector(`input[data-location="${location}"][data-type="day-rate"]`);
+                const insuranceInput = document.querySelector(`input[data-location="${location}"][data-type="insurance"]`);
+                const totalCell = document.querySelector(`td[data-location="${location}"][data-type="total"]`);
+                
+                const dayRate = parseCurrency(dayRateInput.value);
+                const insurance = parseCurrency(insuranceInput.value);
+                const total = (dayRate * productionDays) + insurance;
+                
+                liveActionTotals[location] = total;
+                totalCell.textContent = formatCurrency(total);
+            });
+            
+            // Calculate Post Production totals
+            const postServices = ['edit', 'color', 'vfx', 'conform'];
+            let postTotal = 0;
+            
+            postServices.forEach(service => {
+                const rateInput = document.querySelector(`input[data-post="${service}"][data-type="rate"]`);
+                const totalCell = document.querySelector(`td[data-post="${service}"][data-type="total"]`);
+                
+                const rate = parseCurrency(rateInput.value);
+                const total = rate * deliverables;
+                
+                postTotal += total;
+                totalCell.textContent = formatCurrency(total);
+            });
+            
+            // Calculate Talent totals
+            const talentTypes = ['ocp', 'vo', 'parts'];
+            let talentTotal = 0;
+            
+            talentTypes.forEach(type => {
+                const quantityInput = document.querySelector(`input[data-talent="${type}"][data-type="quantity"]`);
+                const rateInput = document.querySelector(`input[data-talent="${type}"][data-type="rate"]`);
+                const totalCell = document.querySelector(`td[data-talent="${type}"][data-type="total"]`);
+                
+                const quantity = parseInt(quantityInput.value) || 0;
+                const rate = parseCurrency(rateInput.value);
+                const total = quantity * rate * scripts;
+                
+                talentTotal += total;
+                totalCell.textContent = formatCurrency(total);
+            });
+            
+            // Update Bid Scenarios
+            let lowestLocation = '';
+            let lowestAmount = Infinity;
+            
+            locations.forEach(location => {
+                const scenarioElement = document.querySelector(`[data-scenario="${location}"]`);
+                const grandTotal = liveActionTotals[location] + postTotal + talentTotal;
+                scenarioElement.textContent = formatCurrency(grandTotal);
+                
+                if (grandTotal < lowestAmount) {
+                    lowestAmount = grandTotal;
+                    lowestLocation = location;
+                }
+            });
+            
+            // Update lowest bid styling
+            document.querySelectorAll('.scenario-card').forEach(card => {
+                card.classList.remove('lowest');
+                const badge = card.querySelector('.scenario-badge');
+                if (badge) badge.remove();
+            });
+            
+            const lowestCard = document.querySelector(`[data-location="${lowestLocation}"]`);
+            if (lowestCard) {
+                lowestCard.classList.add('lowest');
+                if (!lowestCard.querySelector('.scenario-badge')) {
+                    const badge = document.createElement('div');
+                    badge.className = 'scenario-badge';
+                    badge.textContent = 'BEST VALUE';
+                    lowestCard.appendChild(badge);
+                }
+            }
+        }
+        
+        // Update stat bars
+        function updateStatBars(scripts, productionDays, deliverables) {
+            // Scripts bars (blue)
+            const scriptBars = document.querySelectorAll('.stat-card:nth-child(1) .stat-bar');
+            scriptBars.forEach((bar, index) => {
+                if (index < scripts && index < 10) {
+                    bar.classList.remove('inactive');
+                } else {
+                    bar.classList.add('inactive');
+                }
+            });
+            
+            // Production days bars (purple)
+            const dayBars = document.querySelectorAll('.stat-card:nth-child(2) .stat-bar');
+            dayBars.forEach((bar, index) => {
+                if (index < productionDays && index < 10) {
+                    bar.classList.remove('inactive');
+                } else {
+                    bar.classList.add('inactive');
+                }
+            });
+            
+            // Deliverables bars (orange)
+            const deliverableBars = document.querySelectorAll('.stat-card:nth-child(3) .stat-bar');
+            deliverableBars.forEach((bar, index) => {
+                if (index < deliverables && index < 10) {
+                    bar.classList.remove('inactive');
+                } else {
+                    bar.classList.add('inactive');
+                }
+            });
+        }
+        
+        // Add event listeners
+        scriptsInput.addEventListener('input', calculateAll);
+        productionDaysInput.addEventListener('input', calculateAll);
+        deliverablesInput.addEventListener('input', calculateAll);
+        
+        // Currency inputs
+        document.querySelectorAll('input.currency, input[data-talent]').forEach(input => {
+            input.addEventListener('input', function() {
+                calculateAll();
+            });
+            
+            if (input.classList.contains('currency')) {
+                input.addEventListener('blur', function() {
+                    const value = parseCurrency(this.value);
+                    this.value = formatCurrency(value);
+                });
+            }
+        });
+        
+        // Initial calculation
+        calculateAll();
+    </script>
+</body>
+</html>
